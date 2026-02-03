@@ -115,6 +115,18 @@ class WorkingPaperDashboard extends Controller
     }
 
     /**
+     * Delete rental property
+     */
+    public function deleteRentalProperty(RentalProperty $rentalProperty) 
+    {
+        $this->authorize('update', $rentalProperty->workingPaper);
+
+        $rentalProperty->delete();
+
+        return back()->with('success', 'Rental property deleted successfully');
+    }
+
+    /**
      * Add income item
      */
     public function addIncome(Request $request, WorkingPaper $workingPaper)

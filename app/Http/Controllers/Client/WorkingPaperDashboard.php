@@ -15,20 +15,30 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class WorkingPaperDashboard extends Controller
 {
     use AuthorizesRequests;
+    
     /**
      * Display the client dashboard with type selector and sections
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
-        // Get or create current year's working paper
-        $currentYear = $this->getCurrentFinancialYear();
+        $selectedYear = $request->query('year');
+        
+        if ($selectedYear) {
+            if (!preg_match('/^\d{4}-\d{4}$/', $selectedYear)) {
+                return redirect()->route('dashboard')
+                    ->withErrors(['year' => 'Invalid financial year format']);
+            }
+            $financialYear = $selectedYear;
+        } else {
+            $financialYear = $this->getCurrentFinancialYear();
+        }
         
         $workingPaper = WorkingPaper::firstOrCreate(
             [
                 'user_id' => $user->id,
-                'financial_year' => $currentYear,
+                'financial_year' => $financialYear,
             ],
             [
                 'selected_types' => [],
@@ -68,7 +78,8 @@ class WorkingPaperDashboard extends Controller
             'selected_types' => $validated['selected_types'],
         ]);
 
-        return back()->with('success', 'Work types updated successfully');
+        return redirect()->route('dashboard', ['year' => $workingPaper->financial_year])
+            ->with('success', 'Work types updated successfully');
     }
 
     /**

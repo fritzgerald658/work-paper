@@ -39,15 +39,25 @@
                 <!-- Type Selector Card -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
+                        <!-- Financial Year Switcher -->
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Financial Year</label>
-                            <select class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <select 
+                                onchange="window.location.href='{{ route('dashboard') }}?year='+this.value" 
+                                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
                                 @foreach($financialYears as $year)
                                     <option value="{{ $year }}" {{ $year === $workingPaper->financial_year ? 'selected' : '' }}>
                                         {{ $year }}
+                                        @if($year === $workingPaper->financial_year)
+                                            (Current)
+                                        @endif
                                     </option>
                                 @endforeach
                             </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Select a year to view or create working papers for that period
+                            </p>
                         </div>
 
                         <div class="mb-4">
@@ -67,15 +77,22 @@
                                                 x-model="selectedTypes"
                                                 class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                 {{ in_array($key, $workingPaper->selected_types ?? []) ? 'checked' : '' }}
+                                                {{ $workingPaper->status === 'submitted' ? 'disabled' : '' }}
                                             >
                                             <span class="ml-2 text-sm font-medium text-gray-700">{{ $label }}</span>
                                         </label>
                                     @endforeach
                                 </div>
 
-                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                                    Update Types
-                                </button>
+                                @if($workingPaper->status !== 'submitted')
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                        Update Types
+                                    </button>
+                                @else
+                                    <p class="text-sm text-amber-600">
+                                        This working paper has been submitted. Work types cannot be changed.
+                                    </p>
+                                @endif
                             </form>
                         </div>
                     </div>
@@ -121,19 +138,32 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="text-sm text-gray-600">Status: <span class="font-semibold">{{ ucfirst($workingPaper->status) }}</span></p>
+                                <p class="text-sm text-gray-600">
+                                    Status: 
+                                    <span class="font-semibold px-2 py-1 rounded {{ $workingPaper->status === 'submitted' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                        {{ ucfirst($workingPaper->status) }}
+                                    </span>
+                                </p>
                                 @if($workingPaper->submitted_at)
-                                    <p class="text-sm text-gray-600">Submitted: {{ $workingPaper->submitted_at->format('d M Y, h:i A') }}</p>
+                                    <p class="text-sm text-gray-600 mt-1">Submitted: {{ $workingPaper->submitted_at->format('d M Y, h:i A') }}</p>
                                 @endif
                             </div>
                             
                             @if($workingPaper->status !== 'submitted')
                                 <form method="POST" action="{{ route('client.working-paper.submit', $workingPaper) }}">
                                     @csrf
-                                    <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold">
+                                    <button 
+                                        type="submit" 
+                                        onclick="return confirm('Submit this working paper? You will not be able to edit it after submission.')"
+                                        class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold"
+                                    >
                                         Submit All Data
                                     </button>
                                 </form>
+                            @else
+                                <div class="text-sm text-gray-500">
+                                    This working paper has been submitted
+                                </div>
                             @endif
                         </div>
                     </div>

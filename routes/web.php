@@ -12,20 +12,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [WorkingPaperDashboard::class, 'index'])->name('dashboard');
 
     Route::prefix('client')->name('client.')->group(function () {
+        // Update selected work types
         Route::patch('/working-paper/{workingPaper}/types', [WorkingPaperDashboard::class, 'updateTypes'])
             ->name('working-paper.update-types');
+        
+        // Wage data
         Route::post('/working-paper/{workingPaper}/wage', [WorkingPaperDashboard::class, 'saveWageData'])
             ->name('wage.save');
+        
+        // Rental Property management
         Route::post('/working-paper/{workingPaper}/rental-property', [WorkingPaperDashboard::class, 'addRentalProperty'])
             ->name('rental-property.store');
+        Route::delete('/rental-property/{rentalProperty}', [WorkingPaperDashboard::class, 'deleteRentalProperty'])
+            ->name('rental-property.destroy');
+        
+        // Income items
         Route::post('/working-paper/{workingPaper}/income', [WorkingPaperDashboard::class, 'addIncome'])
             ->name('income.store');
-        Route::delete('/income/{incomeItem}', [WorkingPaperDashboard::class, 'deleteIncome'])
+        Route::delete('/income/{income}', [WorkingPaperDashboard::class, 'deleteIncome'])
             ->name('income.destroy');
+        
+        // Expense items
         Route::post('/working-paper/{workingPaper}/expense', [WorkingPaperDashboard::class, 'addExpense'])
             ->name('expense.store');
-        Route::delete('/expense/{expenseItem}', [WorkingPaperDashboard::class, 'deleteExpense'])
+        Route::delete('/expense/{expense}', [WorkingPaperDashboard::class, 'deleteExpense'])
             ->name('expense.destroy');
+        
+        // Submit working paper
         Route::post('/working-paper/{workingPaper}/submit', [WorkingPaperDashboard::class, 'submit'])
             ->name('working-paper.submit');
     });

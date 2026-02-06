@@ -61,10 +61,10 @@
                             <h4 class="text-lg font-bold text-gray-900">{{ $property->address_label }}</h4>
                             <div class="text-sm text-gray-600 mt-1">
                                 @if($property->ownership_percentage)
-                                    <span class="mr-3">📊 Ownership: {{ $property->ownership_percentage }}%</span>
+                                    <span class="mr-3">Ownership: {{ $property->ownership_percentage }}%</span>
                                 @endif
                                 @if($property->period_rented)
-                                    <span>📅 Period: {{ $property->period_rented }}</span>
+                                    <span>Period: {{ $property->period_rented }}</span>
                                 @endif
                             </div>
                         </div>

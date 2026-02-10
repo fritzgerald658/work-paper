@@ -197,9 +197,11 @@
                                                     <td class="px-3 py-2">{{ strtoupper($expense->quarter ?? 'All') }}</td>
                                                     <td class="px-3 py-2">
                                                         @if($expense->hasMedia('receipts'))
-                                                            <a href="{{ $expense->getFirstMediaUrl('receipts') }}" target="_blank" class="text-blue-600 hover:underline">View</a>
+                                                            <button @click="$dispatch('open-file-viewer', {url: '{{ route('media.view-expense', $expense) }}',name: '{{ $expense->getMedia('receipts')->first()?->file_name ?? 'Receipt' }}'})" type="button" class="text-blue-600 hover:underline cursor-pointer">
+                                                                View
+                                                            </button>
                                                         @else
-                                                            <span class="text-red-600">⚠️</span>
+                                                            <span class="text-red-600">N/A</span>
                                                         @endif
                                                     </td>
                                                     <td class="px-3 py-2">

@@ -176,9 +176,11 @@
                                     <td class="px-4 py-2 text-sm">${{ number_format($expense->net_ex_gst, 2) }}</td>
                                     <td class="px-4 py-2 text-sm">
                                         @if($expense->hasMedia('receipts'))
-                                            <a href="{{ $expense->getFirstMediaUrl('receipts') }}" target="_blank" class="text-blue-600 hover:underline">View</a>
+                                            <button @click="$dispatch('open-file-viewer', {url: '{{ route('media.view-expense', $expense) }}', name: '{{ $expense->getMedia('receipts')->first()?->file_name ?? 'Receipt' }}'})" type="button" class="text-blue-600 hover:underline cursor-pointer">
+                                                View
+                                            </button>
                                         @else
-                                            <span class="text-red-600">⚠️ Missing</span>
+                                            <span class="text-red-600">Missing</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-2 text-sm">

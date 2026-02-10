@@ -11,6 +11,43 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [WorkingPaperDashboard::class, 'index'])->name('dashboard');
 
+    // View media files
+    Route::get('/view-expense-media/{expense}', function (\App\Models\ExpenseItem $expense) {
+        if (!$expense->hasMedia('receipts')) {
+            abort(404);
+        }
+        
+        $media = $expense->getFirstMedia('receipts');
+        return response()->file($media->getPath(), [
+            'Content-Type' => $media->mime_type,
+            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+        ]);
+    })->name('media.view-expense');
+    
+    Route::get('/view-income-media/{income}', function (\App\Models\IncomeItem $income) {
+        if (!$income->hasMedia('invoices')) {
+            abort(404);
+        }
+        
+        $media = $income->getFirstMedia('invoices');
+        return response()->file($media->getPath(), [
+            'Content-Type' => $media->mime_type,
+            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+        ]);
+    })->name('media.view-income');
+    
+    Route::get('/view-wage-media/{wageData}', function (\App\Models\WageData $wageData) {
+        if (!$wageData->hasMedia('payg_summary')) {
+            abort(404);
+        }
+        
+        $media = $wageData->getFirstMedia('payg_summary');
+        return response()->file($media->getPath(), [
+            'Content-Type' => $media->mime_type,
+            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+        ]);
+    })->name('media.view-wage');
+
     Route::prefix('client')->name('client.')->group(function () {
         // Update selected work types
         Route::patch('/working-paper/{workingPaper}/types', [WorkingPaperDashboard::class, 'updateTypes'])

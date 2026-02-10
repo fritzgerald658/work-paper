@@ -5,6 +5,11 @@
         </h2>
     </x-slot>
 
+    <!-- File Viewer Modal -->
+    <div x-data="fileViewerData()" @open-file-viewer.window="openFile($event.detail.url, $event.detail.name)">
+        @include('components.file-viewer-modal')
+    </div>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
@@ -29,6 +34,16 @@
                 function workingPaperApp(initialTypes) {
                     return {
                         selectedTypes: Array.isArray(initialTypes) ? initialTypes : [],
+                    }
+                }
+
+                function fileViewerData() {
+                    return {
+                        ...fileViewerModal(),
+                        
+                        openFile(url, name) {
+                            this.openModal(url, name);
+                        }
                     }
                 }
             </script>

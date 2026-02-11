@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\WorkingPaper;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 
 class AdminDashboard extends Controller
 {
+
+    use AuthorizesRequests;
+
     /**
      * Display admin dashbard with list of working papers
      */
@@ -128,7 +133,7 @@ class AdminDashboard extends Controller
             'admin_comment' => $validated['admin_comment'],
         ]);
 
-        return redirect()>route('admin.dashboard')->with('success', "Working paper for {$workingPaper->user->name} ({$workingPaper->financial_year}) has been rejected and returned to client.");
+        return redirect()->route('admin.dashboard')->with('success', "Working paper for {$workingPaper->user->name} ({$workingPaper->financial_year}) has been rejected and returned to client.");
     }
 
 }

@@ -27,8 +27,7 @@ class WorkingPaperDashboard extends Controller
         
         if ($selectedYear) {
             if (!preg_match('/^\d{4}-\d{4}$/', $selectedYear)) {
-                return redirect()->route('dashboard')
-                    ->withErrors(['year' => 'Invalid financial year format']);
+                return redirect()->route('dashboard')->withErrors(['year' => 'Invalid financial year format']);
             }
             $financialYear = $selectedYear;
         } else {
@@ -53,6 +52,7 @@ class WorkingPaperDashboard extends Controller
             'rentalProperties.expenseItems',
             'incomeItems',
             'expenseItems',
+            'reviewer',
         ]);
 
         return view('client.dashboard', [
@@ -78,8 +78,7 @@ class WorkingPaperDashboard extends Controller
             'selected_types' => $validated['selected_types'],
         ]);
 
-        return redirect()->route('dashboard', ['year' => $workingPaper->financial_year])
-            ->with('success', 'Work types updated successfully');
+        return redirect()->route('client.dashboard', ['year' => $workingPaper->financial_year])->with('success', 'Work types updated successfully');
     }
 
     /**
@@ -100,8 +99,7 @@ class WorkingPaperDashboard extends Controller
         $wageData->update($validated);
 
         if ($request->hasFile('payg_summary')) {
-            $wageData->addMedia($request->file('payg_summary'))
-                ->toMediaCollection('payg_summary');
+            $wageData->addMedia($request->file('payg_summary'))->toMediaCollection('payg_summary');
         }
 
         return back()->with('success', 'Wage data saved successfully');
@@ -159,8 +157,7 @@ class WorkingPaperDashboard extends Controller
         $income = $workingPaper->incomeItems()->create($validated);
 
         if ($request->hasFile('invoice')) {
-            $income->addMedia($request->file('invoice'))
-                ->toMediaCollection('invoices');
+            $income->addMedia($request->file('invoice'))->toMediaCollection('invoices');
         }
 
         return back()->with('success', 'Income item added successfully');
@@ -238,23 +235,28 @@ class WorkingPaperDashboard extends Controller
      */
     public function submit(WorkingPaper $workingPaper)
     {
-        $this->authorize('update', $workingPaper);
+        $this->authorize('submit', $workingPaper);
 
         // Validation: Check all expenses have receipts
-        $expensesWithoutReceipts = $workingPaper->expenseItems()
-            ->whereDoesntHave('media')
-            ->count();
+        $expensesWithoutReceipts = $workingPaper->expenseItems()->whereDoesntHave('media')->count();
 
         if ($expensesWithoutReceipts > 0) {
             return back()->withErrors(['submit' => "Please upload receipts for all {$expensesWithoutReceipts} expense(s) before submitting."]);
         }
 
+        // Determine new status based on current status
+        $newStatus = $workingPaper->status === 'rejected' ? 'resubmitted' : 'submitted';
+
         $workingPaper->update([
-            'status' => 'submitted',
+            'status' => $newStatus,
             'submitted_at' => now(),
         ]);
 
-        return back()->with('success', 'Working paper submitted successfully!');
+        $message = $newStatus === 'resubmitted' 
+            ? 'Working paper resubmitted successfully! It will be reviewed by an admin.'
+            : 'Working paper submitted successfully! It will be reviewed by an admin.';
+
+        return back()->with('success', $message);
     }
 
     /**

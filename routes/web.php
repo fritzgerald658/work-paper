@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Client\WorkingPaperDashboard;
+use App\Http\Controllers\Admin\AdminDashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,7 +10,13 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [WorkingPaperDashboard::class, 'index'])->name('dashboard');
+    // Redirect to appropriate dashboard based on role
+    Route::get('/dashboard', function () {
+        if (auth()->user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('client.dashboard');
+    })->name('dashboard');
 
     // View media files
     Route::get('/view-expense-media/{expense}', function (\App\Models\ExpenseItem $expense) {
@@ -48,7 +55,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('media.view-wage');
 
+    // Client Routes
     Route::prefix('client')->name('client.')->group(function () {
+        // Client dashboard
+        Route::get('/dashboard', [WorkingPaperDashboard::class, 'index'])->name('dashboard');
+        
         // Update selected work types
         Route::patch('/working-paper/{workingPaper}/types', [WorkingPaperDashboard::class, 'updateTypes'])
             ->name('working-paper.update-types');
@@ -78,6 +89,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Submit working paper
         Route::post('/working-paper/{workingPaper}/submit', [WorkingPaperDashboard::class, 'submit'])
             ->name('working-paper.submit');
+    });
+
+    // Admin Routes
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+        // Admin dashboard - list all working papers
+        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+        
+        // View specific working paper for review
+        Route::get('/working-paper/{workingPaper}', [AdminDashboard::class, 'show'])->name('working-paper.show');
+        
+        // Approve working paper
+        Route::post('/working-paper/{workingPaper}/approve', [AdminDashboard::class, 'approve'])->name('working-paper.approve');
+        
+        // Reject working paper
+        Route::post('/working-paper/{workingPaper}/reject', [AdminDashboard::class, 'reject'])->name('working-paper.reject');
     });
 });
 

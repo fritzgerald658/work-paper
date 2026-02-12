@@ -7,14 +7,15 @@ use Illuminate\Http\Request;
 use App\Models\WorkingPaper;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\WorkingPaperApproved;
+use App\Notifications\WorkingPaperRejected;
 
 class AdminDashboard extends Controller
 {
-
     use AuthorizesRequests;
 
     /**
-     * Display admin dashbard with list of working papers
+     * Display admin dashboard with list of working papers
      */
     public function index(Request $request)
     {
@@ -112,7 +113,10 @@ class AdminDashboard extends Controller
             'admin_comment' => null,
         ]);
 
-        return redirect()->route('admin.dashboard')->with('success', "Working paper for {$workingPaper->user->name} ({$workingPaper->financial_year}) has been approved.");
+        // Send email notification to client
+        $workingPaper->user->notify(new WorkingPaperApproved($workingPaper));
+
+        return redirect()->route('admin.dashboard')->with('success', "Working paper for {$workingPaper->user->name} ({$workingPaper->financial_year}) has been approved. Email notification sent.");
     }
 
     /**
@@ -133,7 +137,9 @@ class AdminDashboard extends Controller
             'admin_comment' => $validated['admin_comment'],
         ]);
 
-        return redirect()->route('admin.dashboard')->with('success', "Working paper for {$workingPaper->user->name} ({$workingPaper->financial_year}) has been rejected and returned to client.");
-    }
+        // Send email notification to client
+        $workingPaper->user->notify(new WorkingPaperRejected($workingPaper));
 
+        return redirect()->route('admin.dashboard')->with('success', "Working paper for {$workingPaper->user->name} ({$workingPaper->financial_year}) has been rejected and returned to client. Email notification sent.");
+    }
 }
